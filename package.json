@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "site": "node scripts/build-site.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
