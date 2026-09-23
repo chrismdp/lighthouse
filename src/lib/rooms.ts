@@ -48,18 +48,33 @@ export function availableExits(rooms: Room[], room: Room): Direction[] {
 export interface MoveResult {
   room: Room;
   blockedMessage: string | null;
+  visited: ReadonlySet<string>;
 }
 
-export function move(rooms: Room[], current: Room, direction: Direction): MoveResult {
+const LAMP_ROOM_ID = "lamp-room";
+const KEEPERS_KITCHEN_ID = "keepers-kitchen";
+const LAMP_ROOM_LOCKED_MESSAGE = "The lamp room door is locked.";
+
+export function move(
+  rooms: Room[],
+  current: Room,
+  direction: Direction,
+  visited: ReadonlySet<string> = new Set()
+): MoveResult {
   const { dx, dy } = deltas[direction];
   const target = findRoom(rooms, current.x + dx, current.y + dy);
 
-  if (target) {
-    return { room: target, blockedMessage: null };
+  if (!target) {
+    return {
+      room: current,
+      blockedMessage: current.blockedMessages[direction] ?? "You can't go that way.",
+      visited,
+    };
   }
 
-  return {
-    room: current,
-    blockedMessage: current.blockedMessages[direction] ?? "You can't go that way.",
-  };
+  if (target.id === LAMP_ROOM_ID && !visited.has(KEEPERS_KITCHEN_ID)) {
+    return { room: current, blockedMessage: LAMP_ROOM_LOCKED_MESSAGE, visited };
+  }
+
+  return { room: target, blockedMessage: null, visited: new Set(visited).add(target.id) };
 }

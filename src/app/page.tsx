@@ -20,6 +20,7 @@ const KEY_MAP: Record<string, Direction> = {
 export default function Home() {
   const [rooms, setRooms] = useState<Room[] | null>(null);
   const [current, setCurrent] = useState<Room | null>(null);
+  const [visited, setVisited] = useState<ReadonlySet<string>>(new Set());
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,8 +36,10 @@ export default function Home() {
       })
       .then((data) => {
         if (cancelled) return;
+        const start = startingRoom(data);
         setRooms(data);
-        setCurrent(startingRoom(data));
+        setCurrent(start);
+        setVisited(new Set([start.id]));
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -57,11 +60,12 @@ export default function Home() {
       if (!direction) return;
 
       event.preventDefault();
-      const result = move(rooms, current, direction);
+      const result = move(rooms, current, direction, visited);
       setCurrent(result.room);
+      setVisited(result.visited);
       setMessage(result.blockedMessage);
     },
-    [rooms, current]
+    [rooms, current, visited]
   );
 
   useEffect(() => {

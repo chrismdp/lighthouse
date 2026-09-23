@@ -45,17 +45,43 @@ describe("move", () => {
 
   it("walks the full loop around the lighthouse", () => {
     let current = startingRoom(rooms);
+    let visited: ReadonlySet<string> = new Set<string>();
 
-    current = move(rooms, current, "left").room; // Rocks -> Keeper's Kitchen
+    ({ room: current, visited } = move(rooms, current, "left", visited)); // Rocks -> Keeper's Kitchen
     expect(current.id).toBe("keepers-kitchen");
 
-    current = move(rooms, current, "up").room; // -> Spiral Stair
+    ({ room: current, visited } = move(rooms, current, "up", visited)); // -> Spiral Stair
     expect(current.id).toBe("spiral-stair");
 
-    current = move(rooms, current, "right").room; // -> Lamp Room
+    ({ room: current, visited } = move(rooms, current, "right", visited)); // -> Lamp Room (unlocked, kitchen visited)
     expect(current.id).toBe("lamp-room");
 
-    current = move(rooms, current, "down").room; // -> Rocks
+    ({ room: current, visited } = move(rooms, current, "down", visited)); // -> Rocks
     expect(current.id).toBe("rocks");
+  });
+});
+
+describe("Lamp Room lock", () => {
+  it("keeps the Lamp Room door locked until the Keeper's Kitchen has been visited", () => {
+    const rocks = startingRoom(rooms);
+    const result = move(rooms, rocks, "up", new Set());
+
+    expect(result.room.id).toBe("rocks");
+    expect(result.blockedMessage).toBe("The lamp room door is locked.");
+  });
+
+  it("unlocks the Lamp Room door once the Keeper's Kitchen has been visited", () => {
+    let current = startingRoom(rooms);
+    let visited: ReadonlySet<string> = new Set<string>();
+
+    ({ room: current, visited } = move(rooms, current, "left", visited)); // Rocks -> Keeper's Kitchen
+    expect(current.id).toBe("keepers-kitchen");
+
+    ({ room: current, visited } = move(rooms, current, "right", visited)); // -> Rocks
+    expect(current.id).toBe("rocks");
+
+    const result = move(rooms, current, "up", visited);
+    expect(result.room.id).toBe("lamp-room");
+    expect(result.blockedMessage).toBeNull();
   });
 });
