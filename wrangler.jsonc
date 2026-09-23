@@ -13,5 +13,13 @@
       "binding": "WORKER_SELF_REFERENCE",
       "service": "lighthouse"
     }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "lighthouse-rooms",
+      "database_id": "79d5bb3b-f65e-4e1a-a816-c8f1cb4a9a11",
+      "migrations_dir": "migrations"
+    }
   ]
 }
